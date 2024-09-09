@@ -1,4 +1,4 @@
-import { getLcm } from "./lib/utils";
+import { getLcm } from "../lib";
 
 /**
  * Any sound can be represented as a set of partials

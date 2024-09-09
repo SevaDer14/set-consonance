@@ -64,3 +64,12 @@ describe("arrayDeepEqual", () => {
   });
 });
 
+describe("toPrecision", () => {
+  test("should round to the nearest precision", () => { 
+    expect(Utils.toPrecision(0.123456789, 0.1)).toBe(0.1);
+    expect(Utils.toPrecision(0.123456789, 0.01)).toBe(0.12);
+    expect(Utils.toPrecision(0.123456789)).toBe(0.123);
+    expect(Utils.toPrecision(0.123456789, 0.0001)).toBe(0.1235);
+    expect(Utils.toPrecision(0.123456789, 0.00001)).toBe(0.12346);
+  });
+});

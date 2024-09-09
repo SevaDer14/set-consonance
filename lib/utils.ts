@@ -4,7 +4,11 @@ export function remainder(a: number, b: number) {
   return a - Math.floor(a / b) * b;
 }
 
-export function isLcm(lcm: number, divisors: number[], precision = DEFAULT_PRECISION) {
+export function isLcm(
+  lcm: number,
+  divisors: number[],
+  precision = DEFAULT_PRECISION
+) {
   for (let i = 0; i < divisors.length; i++) {
     if (remainder(lcm, divisors[i]) > precision) return false;
   }
@@ -38,4 +42,8 @@ export function arrayDeepEqual(arr1: number[], arr2: number[]) {
   }
 
   return true;
+}
+
+export function toPrecision(num: number, precision = DEFAULT_PRECISION) {
+  return parseFloat(num.toFixed(Math.log10(1 / precision)));
 }
