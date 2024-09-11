@@ -1,4 +1,9 @@
-import { getLcm } from "../lib";
+import {
+  getHarmonicConsonance,
+  getLcm,
+  getPhantomPartialsConsonance,
+  toPrecision,
+} from "../lib";
 
 /**
  * Any sound can be represented as a set of partials
@@ -8,24 +13,30 @@ import { getLcm } from "../lib";
 export class Sound {
   partials: Map<number, number>;
 
-  constructor() {
+  constructor(input?: [number, number][]) {
     this.partials = new Map();
+
+    if (input) {
+      for (const [period, amplitude] of input) {
+        this.addPartial(period, amplitude);
+      }
+    }
   }
 
   public getPeriods() {
     return Array.from(this.partials.keys());
   }
 
-  private addPartial(period: number, amplitude: number) {
-    const existingAmplitude = this.partials.get(period) ?? 0;
-
-    this.partials.set(period, existingAmplitude + amplitude);
+  public getPartials() {
+    return Array.from(this.partials.entries());
   }
 
   public harmonic(length: number) {
     for (let i = 1; i <= length; i++) {
       this.addPartial(1 / i, 0);
     }
+
+    return this;
   }
 
   public generate({
@@ -35,16 +46,19 @@ export class Sound {
     length: number;
     generator: (index: number) => [number, number];
   }) {
-    for (let i = 0; i < length; i++) {
+    for (let i = 1; i <= length; i++) {
       this.addPartial(...generator(i));
     }
+
+    return this;
   }
 
-  public toNote(notePeriod: number) {
+  public toNote(interval: number) {
     const result = new Sound();
 
     for (const [period, amplitude] of this.partials) {
-      result.addPartial(notePeriod * period, amplitude);
+      const newPeriod = toPrecision(period / interval);
+      result.addPartial(newPeriod, amplitude);
     }
 
     return result;
@@ -56,28 +70,32 @@ export class Sound {
     }
   }
 
-  public toChord(periods: number[]) {
+  public toChord(intervals: number[]) {
     const chord = new Sound();
 
-    for (const period of periods) {
-      const note = this.toNote(period);
+    for (const interval of intervals) {
+      const note = this.toNote(interval);
       chord.addSound(note);
     }
 
     return chord;
   }
 
-  // HARMONIC ANALYSIS
-
   public getFundamental() {
     return getLcm(this.getPeriods());
   }
 
-  private getHarmonicEquivalent() {
-
+  public getHarmonicConsonance() {
+    return getHarmonicConsonance(this.getPeriods());
   }
 
-  public getHarmonicConsonance() {
-    
+  public getPhantomPartialsConsonance() {
+    return getPhantomPartialsConsonance(this.getPeriods());
+  }
+
+  private addPartial(period: number, amplitude: number) {
+    const existingAmplitude = this.partials.get(period) ?? 0;
+
+    this.partials.set(period, existingAmplitude + amplitude);
   }
 }

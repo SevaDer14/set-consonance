@@ -1,7 +1,18 @@
 import { DEFAULT_PRECISION, MAX_LCM_ITERATIONS } from "./constants";
 
-export function remainder(a: number, b: number) {
-  return a - Math.floor(a / b) * b;
+// Consider proper division function
+// Consider using real numbers
+export function remainder(a: number, b: number, precision = DEFAULT_PRECISION) {
+  if (a < b) throw new Error("a must be greater than b");
+  if (a < 0 || b < 0) throw new Error("a and b must be positive");
+
+  let remainders = [a];
+
+  do {
+    remainders.push(Math.abs(remainders.at(-1)! - b));
+  } while (remainders.at(-1)! < remainders.at(-2)!);
+
+  return toPrecision(remainders.at(-2)!, precision);
 }
 
 export function isLcm(
@@ -18,14 +29,14 @@ export function isLcm(
 
 export function getLcm(
   num: number[],
-  precision = DEFAULT_PRECISION,
+  precision = 0.01,
   maxMultiplier = MAX_LCM_ITERATIONS
 ) {
   const max = Math.max(...num);
   let multiplier = 1;
   let lcm = max;
 
-  while (!isLcm(lcm, num, precision)) {
+  while (!isLcm(lcm, num, lcm * precision)) {
     if (multiplier > maxMultiplier) throw new Error("LCM not found");
     multiplier++;
     lcm = max * multiplier;
@@ -46,4 +57,16 @@ export function arrayDeepEqual(arr1: number[], arr2: number[]) {
 
 export function toPrecision(num: number, precision = DEFAULT_PRECISION) {
   return parseFloat(num.toFixed(Math.log10(1 / precision)));
+}
+
+export function hasCloseToPrecision(
+  set: number[],
+  num: number,
+  precision = DEFAULT_PRECISION
+) {
+  for (const element of set) {
+    if (Math.abs(element - num) < precision) return true;
+  }
+
+  return false;
 }

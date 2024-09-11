@@ -13,7 +13,13 @@ export function getHarmonicSuperset(set: number[]) {
 }
 
 export function getHarmonicConsonance(set: number[]) {
-  const superset = getHarmonicSuperset(set);
+  try {
+    const superset = getHarmonicSuperset(set);
 
-  return set.length / superset.length;;
+    if (set.length > superset.length) return 1
+
+    return set.length / superset.length;
+  } catch (error) {
+    return 0;
+  }
 }

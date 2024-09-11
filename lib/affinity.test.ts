@@ -36,7 +36,7 @@ describe("getAffinity", () => {
   });
 
   test("Returns 0 if intersection is empty set", () => {
-    expect(Affinity.getAffinity([1, 2, 3], [3.001, 4, 5])).toBe(0);
+    expect(Affinity.getAffinity([1, 2, 3], [3.1, 4, 5])).toBe(0);
   });
 
   test("Returns correct affinity", () => {

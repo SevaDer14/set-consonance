@@ -1,4 +1,4 @@
-import { arrayDeepEqual, getLcm } from "./utils";
+import { arrayDeepEqual, getLcm, hasCloseToPrecision } from "./utils";
 
 export function getNewSetsOfNextSize(elements: number[], sets: number[][]) {
   const newSets: number[][] = [];
@@ -40,7 +40,7 @@ export function getPhantomPartialsSuperset(set: number[]) {
 
   for (const subset of subsets) {
     const lcm = getLcm(subset);
-    if (!superset.includes(lcm)) {
+    if (!hasCloseToPrecision(superset, lcm)) {
       superset.push(lcm);
     }
   }
@@ -49,7 +49,13 @@ export function getPhantomPartialsSuperset(set: number[]) {
 }
 
 export function getPhantomPartialsConsonance(set: number[]) {
-  const superset = getPhantomPartialsSuperset(set);
+  try {
+    const superset = getPhantomPartialsSuperset(set);
 
-  return set.length / superset.length;
+    if (set.length > superset.length) return 1
+
+    return set.length / superset.length;
+  } catch (error) {
+    return 0
+  }
 }

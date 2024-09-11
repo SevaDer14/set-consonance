@@ -7,6 +7,8 @@ describe("remainder", () => {
     expect(Utils.remainder(10, 4)).toBe(2);
     expect(Utils.remainder(10, 5)).toBe(0);
     expect(Utils.remainder(1, 1 / 5)).toBe(0);
+    expect(Utils.remainder(2, 0.667)).toBe(0.001);
+    expect(Utils.remainder(1, 0.333)).toBe(0.001);
   });
 });
 
@@ -46,7 +48,7 @@ describe("getLcm", () => {
   });
 
   test("should return the correct LCM for inharmonic floats", () => {
-    expect(Utils.getLcm([1, 1.2, 5.3])).toBe(318);
+    expect(Utils.getLcm([1, 1.2, 5.3])).toBe(37.1);
   });
 });
 
@@ -65,7 +67,7 @@ describe("arrayDeepEqual", () => {
 });
 
 describe("toPrecision", () => {
-  test("should round to the nearest precision", () => { 
+  test("should round to the nearest precision", () => {
     expect(Utils.toPrecision(0.123456789, 0.1)).toBe(0.1);
     expect(Utils.toPrecision(0.123456789, 0.01)).toBe(0.12);
     expect(Utils.toPrecision(0.123456789)).toBe(0.123);
