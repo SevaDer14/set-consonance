@@ -12,7 +12,7 @@
     "fraction.js": "^4.3.7"
   },
   "description": "Calculate musical consonance using set theory.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "index.ts",
   "directories": {
     "lib": "lib"
