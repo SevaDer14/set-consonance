@@ -1,5 +1,5 @@
 {
-  "name": "consonancejs",
+  "name": "set-consonance",
   "module": "index.ts",
   "type": "module",
   "devDependencies": {
