@@ -10,5 +10,27 @@
   },
   "dependencies": {
     "fraction.js": "^4.3.7"
-  }
+  },
+  "description": "Calculate musical consonance using set theory.",
+  "version": "0.1.0",
+  "main": "index.ts",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "bun test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SevaDer14/set-consonance.git"
+  },
+  "keywords": [
+    "consonance"
+  ],
+  "author": "new-tonality",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SevaDer14/set-consonance/issues"
+  },
+  "homepage": "https://github.com/SevaDer14/set-consonance#readme"
 }
