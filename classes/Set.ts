@@ -110,7 +110,7 @@ export class Set {
 
     if (!f) return false;
 
-    this.add(f.mul(interval));
+    this.add(f.div(interval));
 
     return true;
   }
@@ -119,7 +119,7 @@ export class Set {
     const result = new Set();
 
     for (const [key, fraction] of this.fractions) {
-      result.add(fraction.mul(interval));
+      result.add(fraction.div(interval));
     }
 
     return result;

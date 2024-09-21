@@ -242,9 +242,9 @@ describe("Set", () => {
       new Fraction(4, 3),
     ]);
 
-    set.shiftFraction("1/3", new Fraction(2, 1));
+    set.shiftFraction("2/3", new Fraction(2, 1));
 
-    expect(Array.from(set.fractions.keys())).toEqual(["2/3", "4/3"]);
+    expect(Array.from(set.fractions.keys())).toEqual(["1/3", "4/3"]);
   });
 
   test("Should shift on interval", () => {
@@ -256,7 +256,7 @@ describe("Set", () => {
 
     const result = set.toShifted(new Fraction(2, 1));
 
-    expect(Array.from(result.fractions.keys())).toEqual(["2/3", "4/3", "8/3"]);
+    expect(Array.from(result.fractions.keys())).toEqual(["1/6", "1/3", "2/3"]);
   });
 
   test("Should find smallest fraction in set", () => {
