@@ -1,4 +1,3 @@
-// import { getAffinity } from "../lib";
 import Fraction from "fraction.js";
 import { Set } from "./Set";
 import { expect, test, describe } from "bun:test";

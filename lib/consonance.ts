@@ -10,7 +10,7 @@ export function getAffinity(set1: Set, set2: Set) {
   return new Fraction(intersection.fractions.size, smallerSet.fractions.size);
 }
 
-export function getHarmonicConsonance(set: Set) {
+export function getHarmonicity(set: Set) {
   const superset = set.harmonicSuperset();
 
   return new Fraction(set.fractions.size, superset.fractions.size);

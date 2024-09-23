@@ -46,7 +46,7 @@ describe("Consonance harmonicity", () => {
     const set1 = new Set().harmonic(20);
     const set2 = set1.toShifted(new Fraction(1, 1));
 
-    const harmonicity = Consonance.getHarmonicConsonance(set1.union([set2]));
+    const harmonicity = Consonance.getHarmonicity(set1.union([set2]));
 
     expect(harmonicity.toFraction()).toEqual("1");
   });
@@ -55,7 +55,7 @@ describe("Consonance harmonicity", () => {
     const set1 = new Set().harmonic(20);
     const set2 = set1.toShifted(new Fraction(1, 2));
 
-    const harmonicity = Consonance.getHarmonicConsonance(set1.union([set2]));
+    const harmonicity = Consonance.getHarmonicity(set1.union([set2]));
 
     expect(harmonicity.toFraction()).toEqual("3/4");
   });
@@ -64,7 +64,7 @@ describe("Consonance harmonicity", () => {
     const set1 = new Set().harmonic(20);
     const set2 = set1.toShifted(new Fraction(5, 4));
 
-    const harmonicity = Consonance.getHarmonicConsonance(set1.union([set2]));
+    const harmonicity = Consonance.getHarmonicity(set1.union([set2]));
 
     expect(harmonicity.toFraction()).toEqual("9/25");
   });
@@ -73,7 +73,7 @@ describe("Consonance harmonicity", () => {
     const set1 = new Set().harmonic(20);
     const set2 = set1.toShifted(new Fraction(101, 100));
 
-    const harmonicity = Consonance.getHarmonicConsonance(set1.union([set2]));
+    const harmonicity = Consonance.getHarmonicity(set1.union([set2]));
 
     expect(harmonicity.toFraction()).toEqual("2/101");
   });
