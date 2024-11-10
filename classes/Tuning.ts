@@ -1,83 +1,79 @@
 import Fraction from "fraction.js";
-import { Set } from "./Set";
-import { getHarmonicity } from "../lib";
+import { SoundSet } from "./SoundSet";
+import { errors, type Point } from "../lib";
+import { Fractions } from "./Fractions";
 
-
-type ConstructorOptions = {
-  set: Set;
-  context: Set;
-  affinityWeight?: number;
-  harmonicityWeight?: number;
-  minConsonance?: number;
+export type TuningConstructorOptions = {
+  contextSet: SoundSet;
+  set: SoundSet;
 };
 
 export class Tuning {
-  intervals: Map<string, number>;
+  intervals: Fractions;
+  affinityContribution: Fractions;
+  harmonicityContribution: Fractions;
+  contextSet: SoundSet;
+  set: SoundSet;
 
-  constructor({
-    set,
-    context,
-    affinityWeight = 1,
-    harmonicityWeight = 1,
-    minConsonance = 0.2,
-  }: ConstructorOptions) {
-    const intervals = new Map<string, number>();
-    const affinityTuning = this.getAffinityIntervals(set, context);
+  constructor(opts: TuningConstructorOptions) {
+    if (opts.set !== opts.contextSet) throw new Error(errors.tuningWrongType);
 
-    for (const [interval, affinity] of affinityTuning) {
-      const harmonicity = getHarmonicity(
-        set.toShifted(new Fraction(interval)).union([context])
-      ).valueOf();
+    this.set = opts.set;
+    this.contextSet = opts.contextSet;
 
-      const totalConsonance =
-        affinity * affinityWeight + harmonicity * harmonicityWeight;
-
-      if (totalConsonance < minConsonance) continue;
-      intervals.set(interval, totalConsonance > 1 ? 1 : totalConsonance);
-    }
-
-    this.intervals = intervals;
+    [this.intervals, this.affinityContribution, this.harmonicityContribution] =
+      this.constructIntervals(opts);
   }
 
-  private getAffinityIntervals(set: Set, context: Set) {
-    const affinityIntervals = new Map<string, number>();
-
-    const intervals = this.getAllIntervals(set, context);
-    const minSize = Math.min(set.fractions.size, context.fractions.size);
-
-    for (const [interval, count] of intervals) {
-      affinityIntervals.set(interval, count / minSize);
-    }
-
-    return affinityIntervals;
+  createKey(f: Fraction) {
+    return f.toFraction();
   }
 
-  private getAllIntervals(set: Set, context: Set) {
-    const intervals = new Map<string, number>();
-    const setElements = set.elements();
-    const contextElements = context.elements();
+  constructIntervals(opts: any) {
+    const intervals = new Fractions();
+    const affinityContribution = new Fractions();
+    const harmonicityContribution = new Fractions();
 
-    for (let i = 0; i < setElements.length; i++) {
-      for (let j = 0; j < contextElements.length; j++) {
-        const interval = contextElements[j].div(setElements[i]).toFraction();
-
-        if (intervals.has(interval)) {
-          intervals.set(interval, intervals.get(interval)! + 1);
-        } else {
-          intervals.set(interval, 1);
-        }
-      }
-    }
-
-    return intervals;
+    return [intervals, affinityContribution, harmonicityContribution];
   }
 
-  public get(interval: Fraction | string) {
-    if (typeof interval === "string") return this.intervals.get(interval);
-    return this.intervals.get(interval.toFraction());
+  getConsonance(
+    key: string,
+    affinityWeight = new Fraction(1, 2),
+    harmonicityWeight = new Fraction(1, 2)
+  ): Fraction {
+    const a: Fraction = this.affinityContribution.get(key) ?? new Fraction(0);
+    const h: Fraction =
+      this.harmonicityContribution.get(key) ?? new Fraction(0);
+
+    const affinity = a.mul(affinityWeight);
+    const harmonicity = h.mul(harmonicityWeight);
+
+    return affinity.add(harmonicity);
   }
 
-  public toSorted() {
-    return Array.from(this.intervals.entries()).sort((a, b) => b[1] - a[1]);
+  getIntervalConsonance(affinityWeight = new Fraction(1, 2)) {
+    const result = new Fractions();
+    const harmonicityWeight = new Fraction(1, 1).sub(affinityWeight);
+    
+    this.intervals.forEach((interval, key) => {
+      result.set(key, this.getConsonance(key, affinityWeight, harmonicityWeight));
+    });
+
+    return result;
+  }
+
+  getPlotData(affinityWeight = new Fraction(1, 2)) {
+    const result: Point[] = [];
+    const harmonicityWeight = new Fraction(1, 1).sub(affinityWeight);
+
+    this.intervals.forEach((interval, key) => {
+      result.push([
+        interval.valueOf(),
+        this.getConsonance(key, affinityWeight, harmonicityWeight).valueOf(),
+      ]);
+    });
+
+    return result.sort((a, b) => a[0] - b[0]);
   }
 }
