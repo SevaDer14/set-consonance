@@ -1,83 +1,86 @@
 import Fraction from "fraction.js";
 import { Set } from "./Set";
-import { getHarmonicity } from "../lib";
+import { getAffinity, getConsonance, getHarmonicity } from "../lib";
 
+type HarmonicTuningOptions = {
+  precision: number;
+};
 
-type ConstructorOptions = {
-  set: Set;
-  context: Set;
-  affinityWeight?: number;
-  harmonicityWeight?: number;
-  minConsonance?: number;
+const DEFAULT_HARMONIC_TUNING_OPTIONS: HarmonicTuningOptions = {
+  precision: 100,
 };
 
 export class Tuning {
-  intervals: Map<string, number>;
+  intervals: Set;
+  consonanceValues: Map<string, Fraction>;
+  affinityWeight: number;
+  harmonicityWeight: number;
 
-  constructor({
-    set,
-    context,
-    affinityWeight = 1,
-    harmonicityWeight = 1,
-    minConsonance = 0.2,
-  }: ConstructorOptions) {
-    const intervals = new Map<string, number>();
-    const affinityTuning = this.getAffinityIntervals(set, context);
-
-    for (const [interval, affinity] of affinityTuning) {
-      const harmonicity = getHarmonicity(
-        set.toShifted(new Fraction(interval)).union([context])
-      ).valueOf();
-
-      const totalConsonance =
-        affinity * affinityWeight + harmonicity * harmonicityWeight;
-
-      if (totalConsonance < minConsonance) continue;
-      intervals.set(interval, totalConsonance > 1 ? 1 : totalConsonance);
-    }
-
-    this.intervals = intervals;
+  constructor({ affinityWeight = 0.5, harmonicityWeight = 0.5 }) {
+    this.intervals = new Set();
+    this.consonanceValues = new Map();
+    this.affinityWeight = affinityWeight;
+    this.harmonicityWeight = harmonicityWeight;
   }
 
-  private getAffinityIntervals(set: Set, context: Set) {
-    const affinityIntervals = new Map<string, number>();
+  affinitive(set1: Set, set2: Set) {
+    this.intervals = new Set();
 
-    const intervals = this.getAllIntervals(set, context);
-    const minSize = Math.min(set.fractions.size, context.fractions.size);
+    const set1Elements = set1.elements();
+    const set2Elements = set2.elements();
 
-    for (const [interval, count] of intervals) {
-      affinityIntervals.set(interval, count / minSize);
-    }
+    for (let i = 0; i < set1Elements.length; i++) {
+      for (let j = 0; j < set2Elements.length; j++) {
+        const interval = set2Elements[j].div(set1Elements[i]);
 
-    return affinityIntervals;
-  }
-
-  private getAllIntervals(set: Set, context: Set) {
-    const intervals = new Map<string, number>();
-    const setElements = set.elements();
-    const contextElements = context.elements();
-
-    for (let i = 0; i < setElements.length; i++) {
-      for (let j = 0; j < contextElements.length; j++) {
-        const interval = contextElements[j].div(setElements[i]).toFraction();
-
-        if (intervals.has(interval)) {
-          intervals.set(interval, intervals.get(interval)! + 1);
-        } else {
-          intervals.set(interval, 1);
-        }
+        this.intervals.add(interval);
       }
     }
 
-    return intervals;
+    this.intervals.fractions.forEach((fraction, key) => {
+      this.consonanceValues.set(
+        key,
+        getConsonance(
+          set1.toShifted(fraction),
+          set2,
+          this.affinityWeight,
+          this.harmonicityWeight
+        )
+      );
+    });
+
+    return this;
   }
 
-  public get(interval: Fraction | string) {
-    if (typeof interval === "string") return this.intervals.get(interval);
-    return this.intervals.get(interval.toFraction());
+  harmonic(set1: Set, set2: Set, options = DEFAULT_HARMONIC_TUNING_OPTIONS) {
+    this.intervals = new Set();
+    const octaveTuning = new Set();
+
+    for (let i = 0; i < options.precision; i++) {
+      octaveTuning.add(new Fraction(options.precision + i, options.precision));
+    }
+
+    this.intervals.union([
+      octaveTuning.toShifted(new Fraction(1, 2)),
+      octaveTuning,
+    ]);
+
+    this.intervals.fractions.forEach((fraction, key) => {
+      this.consonanceValues.set(
+        key,
+        getConsonance(
+          set1.toShifted(fraction),
+          set2,
+          this.affinityWeight,
+          this.harmonicityWeight
+        )
+      );
+    });
+
+    return this;
   }
 
-  public toSorted() {
-    return Array.from(this.intervals.entries()).sort((a, b) => b[1] - a[1]);
+  superset(set1: Set, set2: Set) {
+    return this.affinitive(set1.harmonicSuperset(), set2.harmonicSuperset());
   }
 }

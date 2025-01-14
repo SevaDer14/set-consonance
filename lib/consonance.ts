@@ -16,6 +16,20 @@ export function getHarmonicity(set: Set) {
   return new Fraction(set.fractions.size, superset.fractions.size);
 }
 
+export function getConsonance(
+  set1: Set,
+  set2: Set,
+  affinityWeight = 0.5,
+  harmonicityWeight = 0.5
+) {
+  const affinity = getAffinity(set1, set2);
+  const harmonicity = getHarmonicity(set1.union([set2]));
+
+  return affinity
+    .mul(affinityWeight)
+    .add(harmonicity.mul(harmonicityWeight))
+}
+
 export function getPhantomFractionsConsonance(set: Set) {
   const phantoms = set.phantoms();
 

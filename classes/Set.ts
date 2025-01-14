@@ -14,6 +14,7 @@ export class Set {
   }
 
   public add(fraction: Fraction) {
+   
     this.fractions.set(fraction.toFraction(), fraction);
 
     return this;
