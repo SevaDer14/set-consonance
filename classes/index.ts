@@ -1,2 +1,3 @@
-export * from "./Set";
+export * from "./FractionSet";
+export * from "./Consonance";
 export * from "./Tuning";

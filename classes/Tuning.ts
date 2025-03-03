@@ -1,132 +1,142 @@
-import Fraction from "fraction.js";
-import { Set } from "./Set";
-import { getConsonance } from "../lib";
-
-type SortBy = "interval" | "consonance";
-
-type HarmonicTuningOptions = {
-  precision?: number;
-  octaveSpan?: number;
-};
-
-const DEFAULT_HARMONIC_TUNING_OPTIONS: Required<HarmonicTuningOptions> = {
-  precision: 100,
-  octaveSpan: 1,
-};
-
-const DEFAULT_CONSTRUCTOR_OPTIONS = {
-  affinityWeight: 0.5,
-  harmonicityWeight: 0.5,
-};
+import type Fraction from "fraction.js";
+import { FractionSet } from "./FractionSet";
+import { Consonance } from "./Consonance";
+import {
+  getHarmonicSuperset,
+  getKey,
+  type ConsonancePair,
+  type RationalNumber,
+  type TuningDataItem,
+} from "../lib";
+import {
+  getAffinitiveIntervals,
+  getHarmonicItervals,
+  type GetHarmonicIntervalsArgs,
+} from "../lib/intervals";
 
 export class Tuning {
-  intervals: Set;
-  consonanceValues: Map<string, Fraction>;
-  affinityWeight: number;
-  harmonicityWeight: number;
+  private _data = new Map() as Map<string, TuningDataItem>;
+  public context = new FractionSet();
+  public complement = new FractionSet();
 
-  constructor(options = DEFAULT_CONSTRUCTOR_OPTIONS) {
-    this.intervals = new Set();
-    this.consonanceValues = new Map();
-    this.affinityWeight = options.affinityWeight;
-    this.harmonicityWeight = options.harmonicityWeight;
+  constructor(
+    args = {} as Partial<ConsonancePair> & { intervals?: FractionSet }
+  ) {
+    if (args.context) this.context = args.context;
+    if (args.complement) this.complement = args.complement;
+    if (args.intervals) this.setTuningData(args.intervals);
   }
 
-  affinitive(set1: Set, set2: Set) {
-    this.intervals = new Set();
+  get keys() {
+    return this._data.keys();
+  }
 
-    const set1Elements = set1.elements();
-    const set2Elements = set2.elements();
+  get entries() {
+    const result: [Fraction, Consonance][] = [];
 
-    for (let i = 0; i < set1Elements.length; i++) {
-      for (let j = 0; j < set2Elements.length; j++) {
-        const interval = set2Elements[j].div(set1Elements[i]);
+    if (this._data.size === 0) return result;
 
-        this.intervals.add(interval);
-      }
+    for (const key of this.keys) {
+      const { interval, consonance } = this._data.get(key)!;
+
+      result.push([interval, consonance]);
     }
 
-    this.intervals.fractions.forEach((fraction, key) => {
-      this.consonanceValues.set(
-        key,
-        getConsonance(
-          set1.toShifted(fraction),
-          set2,
-          this.affinityWeight,
-          this.harmonicityWeight
-        )
-      );
-    });
+    return result.sort((a, b) => a[0].compare(b[0]));
+  }
+
+  get(rNumber: RationalNumber) {
+    return this._data.get(getKey(rNumber));
+  }
+
+  has(rNumber: RationalNumber) {
+    return this._data.has(getKey(rNumber));
+  }
+
+  getHarmonicTuning({
+    context,
+    complement,
+    ...rest
+  }: Partial<ConsonancePair> & GetHarmonicIntervalsArgs) {
+    if (context) this.context = context;
+    if (complement) this.complement = complement;
+
+    const intervals = getHarmonicItervals(rest);
+    this.setTuningData(intervals);
 
     return this;
   }
 
-  harmonic(set1: Set, set2: Set, opt?: HarmonicTuningOptions) {
-    const options = { ...DEFAULT_HARMONIC_TUNING_OPTIONS, ...(opt || {}) };
+  getAffinitiveTuning(args = {} as Partial<ConsonancePair>) {
+    if (args.context) this.context = args.context;
+    if (args.complement) this.complement = args.complement;
 
-    this.intervals = new Set();
-    const octaveTuning = new Set();
-
-    for (let denominator = 1; denominator <= options.precision; denominator++) {
-      for (
-        let numerator = denominator;
-        numerator <= denominator * 2;
-        numerator++
-      ) {
-        octaveTuning.add(new Fraction(numerator, denominator));
-      }
-    }
-
-    const octaveTunings: Set[] = [];
-
-    for (
-      let octave = options.octaveSpan;
-      octave > -options.octaveSpan;
-      octave--
-    ) {
-      const interval =
-        octave > 0
-          ? new Fraction(2 ** octave, 1)
-          : new Fraction(1, 2 ** -octave);
-      octaveTunings.push(octaveTuning.toShifted(interval));
-    }
-
-    this.intervals = this.intervals.union(octaveTunings);
-
-    this.intervals.fractions.forEach((fraction, key) => {
-      this.consonanceValues.set(
-        key,
-        getConsonance(
-          set1.toShifted(fraction),
-          set2,
-          this.affinityWeight,
-          this.harmonicityWeight
-        )
-      );
+    const intervals = getAffinitiveIntervals({
+      context: this.context,
+      complement: this.complement,
     });
+
+    this.setTuningData(intervals);
 
     return this;
   }
 
-  superset(set1: Set, set2: Set) {
-    return this.affinitive(set1.harmonicSuperset(), set2.harmonicSuperset());
-  }
+  getHarmonicSupersetTuning(args = {} as Partial<ConsonancePair>) {
+    if (args.context) this.context = args.context;
+    if (args.complement) this.complement = args.complement;
 
-  toFileFormat(options: { sortBy: SortBy }) {
-    let items: [Fraction, number][] = [];
-
-    this.intervals.fractions.forEach((fraction, key) => {
-      const consonance = this.consonanceValues.get(key)?.valueOf();
-
-      if (!consonance) return;
-
-      items.push([fraction, consonance]);
+    const intervals = getAffinitiveIntervals({
+      context: getHarmonicSuperset(this.context),
+      complement: getHarmonicSuperset(this.complement),
     });
 
-    items.sort((a, b) =>
-      options.sortBy === "consonance" ? b[1] - a[1] : a[0].compare(b[0])
-    );
+    this.setTuningData(intervals);
 
-    return items.map(([fraction, consonance]) => `${fraction.toFraction()}, ${fraction.valueOf()}, ${consonance}`).join("\n");
+    return this;
+  }
+
+  toFileString() {
+    return this.entries.map(([fraction, consonance]) => {
+      const a = consonance.affinity.valueOf();
+      const h = consonance.harmonicity.valueOf();
+
+      return `${fraction.valueOf()}, ${
+        1200 * Math.log2(fraction.valueOf())
+      }, ${a}, ${h}, ${fraction.toFraction()}, ${a + h}`;
+    }).join("\n");
+  }
+
+  toFractions() {
+    return this.entries.map(([fraction, consonance]) => ({
+      key: getKey(fraction),
+      interval: fraction.toFraction(),
+      affinity: consonance.affinity.toFraction(),
+      harmonicity: consonance.harmonicity.toFraction(),
+      total: consonance.total.toFraction(),
+    }));
+  }
+
+  toDataPoints() {
+    return this.entries.map(([fraction, consonance]) => ({
+      key: getKey(fraction),
+      interval: fraction.valueOf(),
+      affinity: consonance.affinity.valueOf(),
+      harmonicity: consonance.harmonicity.valueOf(),
+      total: consonance.total.valueOf(),
+    }));
+  }
+
+  private setTuningData(intervals: FractionSet) {
+    this._data.clear();
+
+    intervals.forEach((interval, key) => {
+      this._data.set(key, {
+        interval,
+        consonance: new Consonance({
+          context: this.context,
+          complement: this.complement.toTransposed(interval),
+        }),
+      });
+    });
   }
 }

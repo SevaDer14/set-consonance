@@ -1,0 +1,51 @@
+export const tuningAffinitiveUnison = [
+  {
+    key: "1/3",
+    interval: "1/3",
+    affinity: "1/6",
+    harmonicity: "5/18",
+    total: "4/9",
+  },
+  {
+    key: "1/2",
+    interval: "1/2",
+    affinity: "1/6",
+    harmonicity: "5/12",
+    total: "7/12",
+  },
+  {
+    key: "2/3",
+    interval: "2/3",
+    affinity: "1/6",
+    harmonicity: "5/18",
+    total: "4/9",
+  },
+  {
+    key: "1",
+    interval: "1",
+    affinity: "1/2",
+    harmonicity: "1/2",
+    total: "1",
+  },
+  {
+    key: "3/2",
+    interval: "3/2",
+    affinity: "1/6",
+    harmonicity: "5/18",
+    total: "4/9",
+  },
+  {
+    key: "2",
+    interval: "2",
+    affinity: "1/6",
+    harmonicity: "5/12",
+    total: "7/12",
+  },
+  {
+    key: "3",
+    interval: "3",
+    affinity: "1/6",
+    harmonicity: "5/18",
+    total: "4/9",
+  },
+];

@@ -175,5 +175,5 @@ dist
 .DS_Store
 
 # Local files to ignore
-testing.ts
+test.ts
 *.txt
