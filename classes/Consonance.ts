@@ -13,10 +13,6 @@ export class Consonance {
     this._harmonicity = this.getHarmonicity(args).div(2);
     this._total = this._affinity.add(this._harmonicity);
   }
-  
-  get _() {
-    return 2
-  }
 
   get affinity() {
     return this._affinity;
